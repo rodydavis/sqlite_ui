@@ -1,0 +1,17 @@
+name: sqlite_ui
+version: 0.0.1
+publish_to: none
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+dependencies:
+  sqlite3: ^2.7.6
+  mustache_template: ^2.0.0
+  drift: ^2.26.1
+  path_to_regexp:
+    path: path_to_regexp
+  http: ^1.4.0
+dev_dependencies:
+  test: ^1.26.2
+  drift_dev: ^2.26.1
+  build_runner: ^2.4.15
+  shelf: ^1.4.2

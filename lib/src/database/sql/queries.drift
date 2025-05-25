@@ -1,0 +1,69 @@
+import 'schema.drift';
+
+-- Asset Queries
+getAssetById:
+    SELECT * FROM assets
+    WHERE id = :id;
+
+getAssetByName:
+    SELECT * FROM assets
+    WHERE name = :name;
+
+getAllAssets:
+    SELECT * FROM assets;
+
+-- Template Queries
+getTemplateById:
+    SELECT t.*, a.content as template_content, a.mime_type as template_mime_type
+    FROM templates t
+    JOIN assets a ON t.asset_id = a.id
+    WHERE t.id = :id;
+
+getAllTemplates:
+    SELECT t.*, a.content as template_content, a.mime_type as template_mime_type
+    FROM templates t
+    JOIN assets a ON t.asset_id = a.id;
+
+-- Route Queries
+getAllRoutes:
+    SELECT * FROM routes;
+
+getRouteById:
+    SELECT * FROM routes
+    WHERE id = :id;
+
+getRouteByMatchingPath:
+    SELECT * FROM routes
+    WHERE route_matches(:inputPath, path) = 1;
+
+getAssetByServedPath:
+  SELECT a.*
+  FROM assets a
+  JOIN routes r ON a.id = r.asset_id
+  WHERE route_matches(:inputPath, r.path) = 1 AND r.asset_id IS NOT NULL;
+
+-- Data Source Queries
+getDataSourceById:
+    SELECT * FROM data_sources
+    WHERE id = :id;
+
+getAllDataSources:
+    SELECT * FROM data_sources;
+
+getSqlSourceConfigByDataSourceId:
+    SELECT * FROM sql_source_configs
+    WHERE data_source_id = :dataSourceId;
+
+getJsonSourceConfigByDataSourceId:
+    SELECT * FROM json_source_configs
+    WHERE data_source_id = :dataSourceId;
+
+getHttpSourceConfigByDataSourceId:
+    SELECT * FROM http_source_configs
+    WHERE data_source_id = :dataSourceId;
+
+-- RouteDataAssignment Queries
+getRouteDataAssignmentsByRouteId:
+    SELECT * FROM route_data_assignments
+    WHERE route_id = :routeId
+    ORDER BY execution_order ASC;

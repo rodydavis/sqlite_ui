@@ -1,0 +1,129 @@
+import 'schema.drift';
+
+-- Asset Mutations
+insertAsset:
+    INSERT INTO assets (name, mime_type, content, description)
+    VALUES (:name, :mimeType, :content, :description);
+
+updateAsset:
+    UPDATE assets
+    SET name = :name,
+        mime_type = :mimeType,
+        content = :content,
+        description = :description
+    WHERE id = :id;
+
+deleteAsset:
+    DELETE FROM assets
+    WHERE id = :id;
+
+-- Template Mutations
+insertTemplate:
+    INSERT INTO templates (name, asset_id, description)
+    VALUES (:name, :assetId, :description);
+
+updateTemplate:
+    UPDATE templates
+    SET name = :name,
+        asset_id = :assetId,
+        description = :description
+    WHERE id = :id;
+
+deleteTemplate:
+    DELETE FROM templates
+    WHERE id = :id;
+
+-- Route Mutations
+insertRoute:
+    INSERT INTO routes (path, template_id, asset_id, description, redirect_to)
+    VALUES (:path, :templateId, :assetId, :description, :redirectTo);
+
+updateRoute:
+    UPDATE routes
+    SET path = :path,
+        template_id = :templateId,
+        asset_id = :assetId,
+        description = :description,
+        redirect_to = :redirectTo
+    WHERE id = :id;
+
+deleteRoute:
+    DELETE FROM routes
+    WHERE id = :id;
+
+-- Data Source Mutations
+insertDataSource:
+    INSERT INTO data_sources (name, type, description)
+    VALUES (:name, :type, :description);
+
+updateDataSource:
+    UPDATE data_sources
+    SET name = :name,
+        type = :type,
+        description = :description
+    WHERE id = :id;
+
+deleteDataSource:
+    DELETE FROM data_sources
+    WHERE id = :id;
+
+-- SQL Source Config Mutations
+insertSqlSourceConfig:
+    INSERT INTO sql_source_configs (data_source_id, sql_template)
+    VALUES (:dataSourceId, :sqlTemplate);
+
+updateSqlSourceConfig:
+    UPDATE sql_source_configs
+    SET sql_template = :sqlTemplate
+    WHERE data_source_id = :dataSourceId;
+
+deleteSqlSourceConfig:
+    DELETE FROM sql_source_configs
+    WHERE data_source_id = :dataSourceId;
+
+-- JSON Source Config Mutations
+insertJsonSourceConfig:
+    INSERT INTO json_source_configs (data_source_id, asset_id)
+    VALUES (:dataSourceId, :assetId);
+
+updateJsonSourceConfig:
+    UPDATE json_source_configs
+    SET asset_id = :assetId
+    WHERE data_source_id = :dataSourceId;
+
+deleteJsonSourceConfig:
+    DELETE FROM json_source_configs
+    WHERE data_source_id = :dataSourceId;
+
+-- HTTP Source Config Mutations
+insertHttpSourceConfig:
+    INSERT INTO http_source_configs (data_source_id, url_template, method, headers_template, body_template)
+    VALUES (:dataSourceId, :urlTemplate, :method, :headersTemplate, :bodyTemplate);
+
+updateHttpSourceConfig:
+    UPDATE http_source_configs
+    SET url_template = :urlTemplate,
+        method = :method,
+        headers_template = :headersTemplate,
+        body_template = :bodyTemplate
+    WHERE data_source_id = :dataSourceId;
+
+deleteHttpSourceConfig:
+    DELETE FROM http_source_configs
+    WHERE data_source_id = :dataSourceId;
+
+-- RouteDataAssignment Mutations
+insertRouteDataAssignment:
+    INSERT INTO route_data_assignments (route_id, data_source_id, context_name, execution_order)
+    VALUES (:routeId, :dataSourceId, :contextName, :executionOrder);
+
+updateRouteDataAssignment:
+    UPDATE route_data_assignments
+    SET data_source_id = :dataSourceId,
+        context_name = :contextName,
+        execution_order = :executionOrder
+    WHERE id = :id;
+
+deleteRouteDataAssignment:
+    DELETE FROM route_data_assignments
+    WHERE id = :id;

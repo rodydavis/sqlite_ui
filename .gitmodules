@@ -1,0 +1,3 @@
+[submodule "path_to_regexp"]
+	path = path_to_regexp
+	url = https://github.com/rodydavis/path_to_regexp.dart

@@ -1,0 +1,99 @@
+CREATE TABLE assets (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE, -- A unique name or path for the asset
+  mime_type TEXT NOT NULL, -- e.g., 'text/plain', 'text/html', 'image/png', 'application/json'
+  content BLOB NOT NULL, -- The binary content of the asset
+  description TEXT
+);
+
+CREATE INDEX idx_assets_name ON assets (name);
+CREATE INDEX idx_assets_mime_type ON assets (mime_type);
+
+CREATE TABLE templates (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  asset_id INTEGER NOT NULL, -- Asset containing the template content
+  description TEXT,
+  FOREIGN KEY (asset_id) REFERENCES assets (id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_templates_name ON templates (name);
+CREATE INDEX idx_templates_asset_id ON templates (asset_id);
+
+CREATE TABLE routes (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  path TEXT NOT NULL UNIQUE, -- e.g., '/users/:id' or '/posts'
+  template_id INTEGER, -- Nullable, if serving a template
+  asset_id INTEGER,    -- Nullable, if directly serving an asset
+  description TEXT,
+  redirect_to TEXT,    -- Nullable, for redirect support
+  FOREIGN KEY (template_id) REFERENCES templates (id) ON DELETE CASCADE,
+  FOREIGN KEY (asset_id) REFERENCES assets (id) ON DELETE CASCADE,
+  CHECK (NOT (template_id IS NOT NULL AND asset_id IS NOT NULL)), -- Serves a template OR an asset, not both
+  CHECK (template_id IS NOT NULL OR asset_id IS NOT NULL OR redirect_to IS NOT NULL) -- Must serve either a template, an asset, or a redirect
+);
+
+CREATE INDEX idx_routes_path ON routes (path);
+CREATE INDEX idx_routes_template_id ON routes (template_id);
+CREATE INDEX idx_routes_asset_id ON routes (asset_id);
+
+-- Drop old query tables if they exist (idempotent)
+-- DROP TABLE IF EXISTS queries;
+-- DROP TABLE IF EXISTS route_queries;
+
+-- Data Source System
+CREATE TABLE data_sources (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  type TEXT NOT NULL CHECK (type IN ('sql', 'json', 'http')),
+  description TEXT
+);
+
+CREATE INDEX idx_data_sources_name ON data_sources (name);
+CREATE INDEX idx_data_sources_type ON data_sources (type);
+
+CREATE TABLE sql_source_configs (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  data_source_id INTEGER NOT NULL UNIQUE,
+  sql_template TEXT NOT NULL,
+  FOREIGN KEY (data_source_id) REFERENCES data_sources (id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_sql_source_configs_data_source_id ON sql_source_configs (data_source_id);
+
+CREATE TABLE json_source_configs (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  data_source_id INTEGER NOT NULL UNIQUE,
+  asset_id INTEGER NOT NULL, -- Changed from source_kind and location_or_content
+  FOREIGN KEY (data_source_id) REFERENCES data_sources (id) ON DELETE CASCADE,
+  FOREIGN KEY (asset_id) REFERENCES assets (id) ON DELETE CASCADE -- New FK
+);
+
+CREATE INDEX idx_json_source_configs_data_source_id ON json_source_configs (data_source_id);
+CREATE INDEX idx_json_source_configs_asset_id ON json_source_configs (asset_id); -- Added index for asset_id
+
+CREATE TABLE http_source_configs (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  data_source_id INTEGER NOT NULL UNIQUE,
+  url_template TEXT NOT NULL,
+  method TEXT NOT NULL DEFAULT 'GET' CHECK (method IN ('GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS')),
+  headers_template TEXT, -- JSON string of headers
+  body_template TEXT,
+  FOREIGN KEY (data_source_id) REFERENCES data_sources (id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_http_source_configs_data_source_id ON http_source_configs (data_source_id);
+
+CREATE TABLE route_data_assignments (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  route_id INTEGER NOT NULL,
+  data_source_id INTEGER NOT NULL,
+  context_name TEXT NOT NULL, -- Key for this data in the template's context
+  execution_order INTEGER NOT NULL DEFAULT 0,
+  UNIQUE (route_id, context_name),
+  FOREIGN KEY (route_id) REFERENCES routes (id) ON DELETE CASCADE,
+  FOREIGN KEY (data_source_id) REFERENCES data_sources (id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_route_data_assignments_route_id ON route_data_assignments (route_id);
+CREATE INDEX idx_route_data_assignments_data_source_id ON route_data_assignments (data_source_id);
