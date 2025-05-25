@@ -49,7 +49,7 @@ import 'package:sqlite_ui/sqlite_ui.dart';
 
 void main() async {
   final db = UIDatabase(NativeDatabase.memory(
-    setup: initFunctions, // Register custom SQLite functions if needed
+    setup: initFunctions, // Register custom SQLite functions
   ));
   final builder = UIBuilder(db);
 
@@ -74,7 +74,7 @@ void main() async {
 
   // Build all entities
   await builder.build();
-  
+
   await db.close();
 }
 ```
@@ -88,7 +88,7 @@ import 'package:sqlite_ui/sqlite_ui.dart';
 
 void main() async {
   final db = UIDatabase(NativeDatabase.memory(
-    setup: initFunctions, // Register custom SQLite functions if needed
+    setup: initFunctions, // Register custom SQLite functions
   ));
   final router = UIRouter(db);
   final String pathToRender = '/hello/World';
