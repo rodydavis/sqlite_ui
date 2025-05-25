@@ -1,144 +1,124 @@
 import 'dart:convert';
 
-import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:sqlite3/sqlite3.dart';
 import 'package:sqlite_ui/sqlite_ui.dart';
 
-// Assuming initFunctions is defined elsewhere, e.g., in your main lib or another example
-// If not, you might need to define it or remove it from NativeDatabase.memory setup.
-// For this example, we'll assume it might exist for consistency with other examples.
-// void initFunctions(sqlite3.Database db) { /* ... define custom functions ... */ }
-
-void main(List<String> args) async {
+void main() async {
   final db = UIDatabase(NativeDatabase.memory(
-    setup: initFunctions, // Remove if initFunctions is not available/needed
+    setup: (database) {
+      initFunctions(database);
+      // Create a products table and insert sample data
+      database.execute('''
+        CREATE TABLE products (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          description TEXT,
+          price REAL
+        );
+      ''');
+      database.execute('''
+        INSERT INTO products (name, description, price) VALUES
+          ('Widget', 'A useful widget', 19.99),
+          ('Gadget', 'A fancy gadget', 29.99),
+          ('Thingamajig', 'A mysterious thingamajig', 9.99);
+      ''');
+    },
   ));
+  final builder = SqliteUIBuilder(db);
+
+  // Add a Mustache template for displaying products
+  final template = builder.addStringTemplate(
+    'products_template',
+    r'''
+    <h1>Product List</h1>
+    <ul>
+      {{#products}}
+        <li>
+          <strong>{{name}}</strong>: {{description}} - ${{price}}
+        </li>
+      {{/products}}
+      {{^products}}
+        <li>No products found.</li>
+      {{/products}}
+    </ul>
+    '''
+        .trim(),
+  );
+  print('Added template: ${template.name}');
+
+  // Add a SQL data source for products
+  final dataSource = builder.addSqlDataSource(
+    'products',
+    'SELECT id, name, description, price FROM products;',
+  );
+  print('Added data source: ${dataSource.name}');
+
+  // Add a route for path "/products"
+  final route = builder.addRoute(
+    '/products',
+    template: template,
+    dataSources: [dataSource],
+  );
+  print('Added route: ${route.path}');
+
+  // Add a Mustache template for displaying product details
+  final detailTemplate = builder.addStringTemplate(
+    'product_detail_template',
+    r'''
+    {{#product}}
+      <h1>{{name}}</h1>
+      <p><strong>Description:</strong> {{description}}</p>
+      <p><strong>Price:</strong> ${{price}}</p>
+    {{/product}}
+    {{^product}}
+      <h1>Product Not Found</h1>
+      <p>The product you are looking for does not exist.</p>
+    {{/product}}
+    <p><a href="/products">Back to product list</a></p>
+    '''
+        .trim(),
+  );
+  print('Added detail template: ${detailTemplate.name}');
+
+  // Add a SQL data source for product details by ID
+  final detailDataSource = builder.addSqlDataSource(
+    'product',
+    'SELECT id, name, description, price FROM products WHERE id = {{productId}};',
+  );
+  print('Added detail data source: ${detailDataSource.name}');
+
+  // Add a route for path "/products/:productId"
+  final detailRoute = builder.addRoute(
+    '/products/:productId',
+    template: detailTemplate,
+    dataSources: [detailDataSource],
+  );
+  print('Added detail route: ${detailRoute.path}');
+
+  // Build all entities
+  await builder.build();
+  print('SqliteUIBuilder build complete.');
+
+  // Render the route
   final router = UIRouter(db);
-
-  const testDbFile = './test.sqlite3';
-  if (args.contains('--create')) {
-    // --- Create and populate an external SQLite database ---
-    final externalDb = sqlite3.open(testDbFile);
-    externalDb.execute('''
-    CREATE TABLE external_users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT
-    );
-  ''');
-    externalDb.execute(
-        'INSERT INTO external_users (name, email) VALUES (?, ?), (?, ?);', [
-      'Alice External',
-      'alice@example.com',
-      'Bob External',
-      'bob@example.com',
-    ]);
-    print('External SQLite database created and populated in memory.');
-  }
-
-  // --- Attach the external database to the main UIDatabase connection ---
+  print('Rendering route "/products":');
   try {
-    await db.customStatement('ATTACH DATABASE ? AS external_db;', [testDbFile]);
-    print('Successfully attached external database as \'external_db\'.');
+    final bytes = await router.renderRoute('/products');
+    final content = utf8.decode(bytes);
+    print('Rendered content: $content');
   } catch (e) {
-    print('Error attaching database: $e');
-    await db.close();
-    return;
+    print('Error rendering route: $e');
   }
 
-  // 1. Add a Mustache template for displaying external users
-  final templateString = '''
-  <h2>External Users (from attached DB)</h2>
-  <ul>
-    {{#users}}
-    <li>ID: {{id}}, Name: {{name}}, Email: {{email}}</li>
-    {{/users}}
-    {{^users}}
-    <li>No external users found.</li>
-    {{/users}}
-  </ul>
-  ''';
-  final templateAssetId = await db.into(db.assets).insert(
-        AssetsCompanion.insert(
-          name: 'external_users_template.mustache',
-          content: Uint8List.fromList(utf8.encode(templateString)),
-          mimeType: 'text/mustache',
-        ),
-      );
-  final actualTemplateId = await db.into(db.templates).insert(
-        TemplatesCompanion.insert(
-          name: 'external_users_display_template',
-          assetId: templateAssetId,
-        ),
-      );
-  print('Added template for external users with ID: $actualTemplateId');
-
-  // 2. Create an 'sql' type data source for querying the attached database
-  final sqlDataSourceId = await db.into(db.dataSources).insert(
-        DataSourcesCompanion.insert(
-          name: 'attachedExternalUsersSource',
-          type: 'sql',
-          description: Value('Fetches users from the attached external_db'),
-        ),
-      );
-  print('Added SQL data source for attached DB with ID: $sqlDataSourceId');
-
-  // 3. Configure the SQL data source
-  await db.into(db.sqlSourceConfigs).insert(
-        SqlSourceConfigsCompanion.insert(
-          dataSourceId: sqlDataSourceId,
-          sqlTemplate:
-              'SELECT id, name, email FROM external_db.external_users;', // Query the attached DB
-        ),
-      );
-  print('Configured SQL source to query external_db.external_users');
-
-  // 4. Add a route for path "/external-users"
-  final routeId = await db.into(db.routes).insert(
-        RoutesCompanion.insert(
-          path: '/external-users',
-          templateId: Value(actualTemplateId),
-          description: Value('Displays users from an attached SQLite database'),
-        ),
-      );
-  print('Added route "/external-users" with ID: $routeId');
-
-  // 5. Assign the SQL data source to the route
-  await db.into(db.routeDataAssignments).insert(
-        RouteDataAssignmentsCompanion.insert(
-          routeId: routeId,
-          dataSourceId: sqlDataSourceId,
-          contextName:
-              'users', // Data will be available as 'users' in the template
-          executionOrder: Value(0),
-        ),
-      );
-  print(
-      'Assigned data source $sqlDataSourceId to route $routeId with context name "users"');
-
-  // 6. Render the route
-  final String testPath = '/external-users';
-  print('\nRendering route "$testPath":');
+  // Render a detail route as an example (for product with ID 1)
+  print('Rendering detail route "/products/1":');
   try {
-    final List<int> renderedBytes = await router.renderRoute(testPath);
-    final String renderedContent = utf8.decode(renderedBytes);
-    print('Rendered content for $testPath:');
-    print(renderedContent);
-  } catch (e, s) {
-    print('Error rendering route $testPath: $e');
-    print('Stack trace: $s');
-  }
-
-  // --- Cleanup ---
-  // Detach database (optional, as closing the main connection usually handles this)
-  try {
-    await db.customStatement('DETACH DATABASE external_db;');
-    print('Detached external_db.');
+    final bytes = await router.renderRoute('/products/1');
+    final content = utf8.decode(bytes);
+    print('Rendered detail content: $content');
   } catch (e) {
-    print('Error detaching database: $e');
+    print('Error rendering detail route: $e');
   }
 
   await db.close();
-  print('Example finished.');
 }
