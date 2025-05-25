@@ -6,7 +6,7 @@ import 'package:sqlite_ui/sqlite_ui.dart';
 void main() {
   group('HttpBuilder Pattern', () {
     test('renders a single post from HTTP source', () async {
-      final db = UIDatabase(NativeDatabase.memory(setup: initFunctions));
+      final db = UIDatabase(NativeDatabase.memory(setup: initUIFunctions));
       final builder = UIBuilder(db);
       final template = builder.addStringTemplate(
         'post_template',
@@ -31,7 +31,7 @@ void main() {
     });
 
     test('renders a list of posts from HTTP source', () async {
-      final db = UIDatabase(NativeDatabase.memory(setup: initFunctions));
+      final db = UIDatabase(NativeDatabase.memory(setup: initUIFunctions));
       final builder = UIBuilder(db);
       final listTemplate = builder.addStringTemplate(
         'post_list_template',

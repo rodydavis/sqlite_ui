@@ -6,7 +6,7 @@ import 'package:sqlite_ui/sqlite_ui.dart';
 void main() {
   group('JsonBuilder Pattern', () {
     test('renders simple JSON asset with builder', () async {
-      final db = UIDatabase(NativeDatabase.memory(setup: initFunctions));
+      final db = UIDatabase(NativeDatabase.memory(setup: initUIFunctions));
       final builder = UIBuilder(db);
       final template = builder.addStringTemplate(
         'main_page_template',
@@ -30,7 +30,7 @@ void main() {
     });
 
     test('renders with custom context name', () async {
-      final db = UIDatabase(NativeDatabase.memory(setup: initFunctions));
+      final db = UIDatabase(NativeDatabase.memory(setup: initUIFunctions));
       final builder = UIBuilder(db);
       final template = builder.addStringTemplate(
         'main_page_template',
@@ -54,7 +54,7 @@ void main() {
     });
 
     test('renders multiple JSON data sources', () async {
-      final db = UIDatabase(NativeDatabase.memory(setup: initFunctions));
+      final db = UIDatabase(NativeDatabase.memory(setup: initUIFunctions));
       final builder = UIBuilder(db);
       final template = builder.addStringTemplate(
         'multi_template',

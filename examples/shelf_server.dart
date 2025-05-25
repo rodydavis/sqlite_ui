@@ -61,7 +61,7 @@ searchInput.addEventListener('input', function() {
 
 Future<void> main() async {
   final db = UIDatabase(NativeDatabase.memory(
-    setup: initFunctions,
+    setup: initUIFunctions,
   ));
   final builder = UIBuilder(db);
 

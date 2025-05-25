@@ -6,7 +6,7 @@ import 'package:sqlite_ui/sqlite_ui.dart';
 void main() {
   group('SqliteUIBuilder Examples', () {
     test('json_builder example renders expected HTML', () async {
-      final db = UIDatabase(NativeDatabase.memory(setup: initFunctions));
+      final db = UIDatabase(NativeDatabase.memory(setup: initUIFunctions));
       final builder = UIBuilder(db);
       final template = builder.addStringTemplate(
         'main_page_template',
@@ -31,7 +31,7 @@ void main() {
 
     test('sql_builder example renders product list and details', () async {
       final db = UIDatabase(NativeDatabase.memory(setup: (database) {
-        initFunctions(database);
+        initUIFunctions(database);
         database.execute('''
           CREATE TABLE products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -89,7 +89,7 @@ void main() {
     });
 
     test('http_builder example renders post', () async {
-      final db = UIDatabase(NativeDatabase.memory(setup: initFunctions));
+      final db = UIDatabase(NativeDatabase.memory(setup: initUIFunctions));
       final builder = UIBuilder(db);
       final template = builder.addStringTemplate(
         'post_template',

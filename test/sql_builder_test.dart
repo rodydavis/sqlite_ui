@@ -7,7 +7,7 @@ void main() {
   group('SqlBuilder Pattern', () {
     test('renders product list and details using builder', () async {
       final db = UIDatabase(NativeDatabase.memory(setup: (database) {
-        initFunctions(database);
+        initUIFunctions(database);
         database.execute('''
           CREATE TABLE products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

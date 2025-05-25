@@ -6,7 +6,7 @@ import 'package:sqlite_ui/sqlite_ui.dart';
 void main() async {
   final db = UIDatabase(NativeDatabase.memory(
     setup: (database) {
-      initFunctions(database);
+      initUIFunctions(database);
       // Create a products table and insert sample data
       database.execute('''
         CREATE TABLE products (

@@ -6,7 +6,7 @@ import 'package:sqlite_ui/sqlite_ui.dart';
 
 void main(List<String> args) async {
   final db = UIDatabase(NativeDatabase.memory(
-    setup: initFunctions,
+    setup: initUIFunctions,
   ));
   final router = UIRouter(db);
 
