@@ -97,21 +97,27 @@ void main() async {
 
 ```dart
 import 'dart:convert';
-// ...
-// After building the database and routes as above:
-final router = UIRouter(db);
-final String pathToRender = '/hello/World';
-print("Rendering route: $pathToRender");
-try {
-  final List<int> renderedBytes = await router.renderRoute(pathToRender, htmlEscapeValues: false);
-  final String renderedContent = utf8.decode(renderedBytes);
-  print("Rendered Output:\n$renderedContent");
-  // Expected: <h1>Hello World!</h1><p>Your lucky number is 7.</p>
-} catch (e, s) {
-  print("Error rendering route: $e");
-  print(s);
+import 'package:drift/native.dart';
+import 'package:sqlite_ui/sqlite_ui.dart';
+
+void main() async {
+  final db = UIDatabase(NativeDatabase.memory(
+    setup: initFunctions, // Register custom SQLite functions if needed
+  ));
+  final router = UIRouter(db);
+  final String pathToRender = '/hello/World';
+  print("Rendering route: $pathToRender");
+  try {
+    final renderedBytes = await router.renderRoute(pathToRender);
+    final renderedContent = utf8.decode(renderedBytes);
+    print("Rendered Output:\n$renderedContent");
+    // Expected: <h1>Hello World!</h1><p>Your lucky number is 7.</p>
+  } catch (e, s) {
+    print("Error rendering route: $e");
+    print(s);
+  }
+  await db.close();
 }
-await db.close();
 ```
 
 ## Examples
