@@ -74,21 +74,7 @@ void main() async {
 
   // Build all entities
   await builder.build();
-  final router = UIRouter(db);
-
-  // --- Render a Route ---
-  final String pathToRender = '/hello/World';
-  print("Rendering route: $pathToRender");
-  try {
-    final List<int> renderedBytes = await router.renderRoute(pathToRender, htmlEscapeValues: false);
-    final String renderedContent = utf8.decode(renderedBytes);
-    print("Rendered Output:\n$renderedContent");
-    // Expected: <h1>Hello World!</h1><p>Your lucky number is 7.</p>
-  } catch (e, s) {
-    print("Error rendering route: $e");
-    print(s);
-  }
-
+  
   await db.close();
 }
 ```
