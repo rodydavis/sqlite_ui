@@ -215,23 +215,45 @@ class UIRouter {
           final config = await db
               .getHttpSourceConfigByDataSourceId(dataSource.id)
               .getSingle();
-          final url = renderTemplate(
-            config.urlTemplate,
-            values: routeResult.params, // Parameters from the route path
-          );
           final client = createHttpClient();
           try {
-            final response = await client.get(Uri.parse(url));
-            if (response.statusCode != 200) {
+            final req = http.Request(
+              config.method,
+              Uri.parse(renderTemplate(
+                config.urlTemplate,
+                values: routeResult.params, // Parameters from the route path
+              )),
+            );
+            if (config.headersTemplate != null) {
+              final headers = renderTemplate(
+                config.headersTemplate!,
+                values: routeResult.params, // Parameters from the route path
+              );
+              req.headers.addAll((jsonDecode(headers) as Map).cast());
+            }
+            if (config.bodyTemplate != null) {
+              final body = renderTemplate(
+                config.bodyTemplate!,
+                values: routeResult.params, // Parameters from the route path
+              );
+              req.body = body;
+            }
+            final res = await client.send(req);
+            if (res.statusCode != 200) {
               log(
-                'HTTP request failed with status ${response.statusCode} for URL: $url',
+                'HTTP request failed with status ${res.statusCode} for URL: ${req.url}',
               );
             } else {
-              final contentType = response.headers['content-type'] ?? '';
+              final bytes = await res.stream.toBytes();
+              final contentType = res.headers['content-type'] ?? '';
               if (contentType.startsWith('application/json')) {
-                loadedData = jsonDecode(response.body);
+                loadedData = jsonDecode(utf8.decode(bytes));
+              } else if (contentType.startsWith('text/')) {
+                loadedData = utf8.decode(bytes);
               } else {
-                loadedData = response.body; // Assuming text content
+                log(
+                  'Unsupported content type "$contentType" for HTTP source ${dataSource.name}. Expected application/json or text/*.',
+                );
               }
             }
           } catch (e) {
