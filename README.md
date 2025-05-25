@@ -108,9 +108,10 @@ void main() async {
 
 ## Examples
 
-For more detailed examples, please see the `example/` directory in this repository. It includes demonstrations of:
+For more detailed examples, please see the `examples/` directory in this repository. It includes demonstrations of:
 
 *   Basic JSON data loading (`json.dart`)
 *   HTTP data fetching (`http.dart`)
 *   Querying an attached SQLite database (`sql.dart`)
 *   Routing with path arguments (`routing.dart`)
+*   Shelf server (`shelf_server.dart`)
