@@ -51,7 +51,7 @@ void main() async {
   final db = UIDatabase(NativeDatabase.memory(
     setup: initFunctions, // Register custom SQLite functions if needed
   ));
-  final builder = SqliteUIBuilder(db);
+  final builder = UIBuilder(db);
 
   // Add a Mustache template using the builder
   final template = builder.addStringTemplate(

@@ -7,7 +7,7 @@ void main() {
   group('JsonBuilder Pattern', () {
     test('renders simple JSON asset with builder', () async {
       final db = UIDatabase(NativeDatabase.memory(setup: initFunctions));
-      final builder = SqliteUIBuilder(db);
+      final builder = UIBuilder(db);
       final template = builder.addStringTemplate(
         'main_page_template',
         '<h1>{{jsonData.message}}</h1>',
@@ -31,7 +31,7 @@ void main() {
 
     test('renders with custom context name', () async {
       final db = UIDatabase(NativeDatabase.memory(setup: initFunctions));
-      final builder = SqliteUIBuilder(db);
+      final builder = UIBuilder(db);
       final template = builder.addStringTemplate(
         'main_page_template',
         '<h1>{{custom.message}}</h1>',
@@ -55,7 +55,7 @@ void main() {
 
     test('renders multiple JSON data sources', () async {
       final db = UIDatabase(NativeDatabase.memory(setup: initFunctions));
-      final builder = SqliteUIBuilder(db);
+      final builder = UIBuilder(db);
       final template = builder.addStringTemplate(
         'multi_template',
         '<h1>{{a.message}}</h1><h2>{{b.value}}</h2>',

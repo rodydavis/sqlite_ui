@@ -231,10 +231,10 @@ class RouteBuilder extends _Core {
   }
 }
 
-class SqliteUIBuilder {
+class UIBuilder {
   final UIDatabase db;
 
-  SqliteUIBuilder(this.db);
+  UIBuilder(this.db);
 
   List<AssetBuilder> assets = [];
   List<TemplateBuilder> templates = [];

@@ -7,7 +7,7 @@ void main() async {
   final db = UIDatabase(NativeDatabase.memory(
     setup: initFunctions,
   ));
-  final builder = SqliteUIBuilder(db);
+  final builder = UIBuilder(db);
 
   // Add the template, using the asset created above
   final template = builder.addStringTemplate(

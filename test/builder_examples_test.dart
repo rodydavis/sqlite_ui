@@ -7,7 +7,7 @@ void main() {
   group('SqliteUIBuilder Examples', () {
     test('json_builder example renders expected HTML', () async {
       final db = UIDatabase(NativeDatabase.memory(setup: initFunctions));
-      final builder = SqliteUIBuilder(db);
+      final builder = UIBuilder(db);
       final template = builder.addStringTemplate(
         'main_page_template',
         '<h1>{{jsonData.message}}</h1>',
@@ -47,7 +47,7 @@ void main() {
             ('Thingamajig', 'A mysterious thingamajig', 9.99);
         ''');
       }));
-      final builder = SqliteUIBuilder(db);
+      final builder = UIBuilder(db);
       final template = builder.addStringTemplate(
         'products_template',
         '<h1>Product List</h1>\n<ul>{{#products}}<li><strong>{{name}}</strong>: {{description}} - \${{price}}</li>{{/products}}{{^products}}<li>No products found.</li>{{/products}}</ul>',
@@ -90,7 +90,7 @@ void main() {
 
     test('http_builder example renders post', () async {
       final db = UIDatabase(NativeDatabase.memory(setup: initFunctions));
-      final builder = SqliteUIBuilder(db);
+      final builder = UIBuilder(db);
       final template = builder.addStringTemplate(
         'post_template',
         '<h1>Post {{postData.id}}: {{postData.title}}</h1>\n<p>{{postData.body}}</p>',

@@ -24,7 +24,7 @@ void main() async {
       ''');
     },
   ));
-  final builder = SqliteUIBuilder(db);
+  final builder = UIBuilder(db);
 
   // Add a Mustache template for displaying products
   final template = builder.addStringTemplate(

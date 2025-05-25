@@ -23,7 +23,7 @@ void main() {
             ('Thingamajig', 'A mysterious thingamajig', 9.99);
         ''');
       }));
-      final builder = SqliteUIBuilder(db);
+      final builder = UIBuilder(db);
       final listTemplate = builder.addStringTemplate(
         'products_template',
         '<h1>Product List</h1>\n<ul>{{#products}}<li><strong>{{name}}</strong>: {{description}} - \${{price}}</li>{{/products}}{{^products}}<li>No products found.</li>{{/products}}</ul>',

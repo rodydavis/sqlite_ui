@@ -7,7 +7,7 @@ void main() {
   group('HttpBuilder Pattern', () {
     test('renders a single post from HTTP source', () async {
       final db = UIDatabase(NativeDatabase.memory(setup: initFunctions));
-      final builder = SqliteUIBuilder(db);
+      final builder = UIBuilder(db);
       final template = builder.addStringTemplate(
         'post_template',
         '<h1>Post {{postData.id}}: {{postData.title}}</h1>\n<p>{{postData.body}}</p>',
@@ -32,7 +32,7 @@ void main() {
 
     test('renders a list of posts from HTTP source', () async {
       final db = UIDatabase(NativeDatabase.memory(setup: initFunctions));
-      final builder = SqliteUIBuilder(db);
+      final builder = UIBuilder(db);
       final listTemplate = builder.addStringTemplate(
         'post_list_template',
         '<h1>All Posts</h1>\n<ul>{{#posts}}<li><a href="/posts/{{id}}">{{title}}</a></li>{{/posts}}{{^posts}}<li>No posts found.</li>{{/posts}}</ul>',

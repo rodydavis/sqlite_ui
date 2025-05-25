@@ -7,7 +7,7 @@ void main() async {
   final db = UIDatabase(NativeDatabase.memory(
     setup: initFunctions,
   ));
-  final builder = SqliteUIBuilder(db);
+  final builder = UIBuilder(db);
 
   // Add a Mustache template for displaying a post
   final template = builder.addStringTemplate(

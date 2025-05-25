@@ -63,7 +63,7 @@ Future<void> main() async {
   final db = UIDatabase(NativeDatabase.memory(
     setup: initFunctions,
   ));
-  final builder = SqliteUIBuilder(db);
+  final builder = UIBuilder(db);
 
   final globalStyle = builder.addStringAsset(
     'global.css',
