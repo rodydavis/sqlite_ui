@@ -1,7 +1,142 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'database/database.dart' show UIDatabase;
+import 'database/database.dart';
+
+class UIBuilder {
+  final UIDatabase db;
+
+  UIBuilder(this.db);
+
+  List<AssetBuilder> assets = [];
+  List<TemplateBuilder> templates = [];
+  List<RouteBuilder> routes = [];
+  List<DataSourceBuilder> dataSources = [];
+
+  Future<void> build() async {
+    for (final asset in assets) {
+      await asset.create(db);
+    }
+    for (final template in templates) {
+      await template.create(db);
+    }
+    for (final dataSource in dataSources) {
+      await dataSource.create(db);
+    }
+    for (final route in routes) {
+      await route.create(db);
+    }
+  }
+
+  AssetBuilder addAsset(
+    String name,
+    String mimeType,
+    Uint8List content,
+  ) {
+    final asset = AssetBuilder(
+      name: name,
+      mimeType: mimeType,
+      content: content,
+    );
+    assets.add(asset);
+    return asset;
+  }
+
+  TemplateBuilder addTemplate(
+    String name,
+    AssetBuilder asset,
+  ) {
+    final template = TemplateBuilder(
+      name: name,
+      asset: asset,
+    );
+    templates.add(template);
+    return template;
+  }
+
+  TemplateBuilder addStringTemplate(
+    String name,
+    String content,
+  ) {
+    final template = TemplateBuilder.fromString(name, content);
+    templates.add(template);
+    return template;
+  }
+
+  DataSourceBuilder addJsonDataSource(
+    String name,
+    Map<String, dynamic> json,
+  ) {
+    final dataSource = DataSourceBuilder.json(name, json);
+    dataSources.add(dataSource);
+    return dataSource;
+  }
+
+  DataSourceBuilder addSqlDataSource(
+    String name,
+    String sqlTemplate,
+  ) {
+    final dataSource = DataSourceBuilder.sql(name, sqlTemplate);
+    dataSources.add(dataSource);
+    return dataSource;
+  }
+
+  DataSourceBuilder addHttpDataSource(
+    String name,
+    String urlTemplate, {
+    String method = 'GET',
+    String? headersTemplate,
+    String? bodyTemplate,
+  }) {
+    final dataSource = DataSourceBuilder.http(
+      name,
+      urlTemplate,
+      method: method,
+      headersTemplate: headersTemplate,
+      bodyTemplate: bodyTemplate,
+    );
+    dataSources.add(dataSource);
+    return dataSource;
+  }
+
+  RouteBuilder addRoute(
+    String path, {
+    TemplateBuilder? template,
+    AssetBuilder? asset,
+    List<DataSourceBuilder>? dataSources,
+    String? redirectTo, // New
+  }) {
+    final route = RouteBuilder(
+      path: path,
+      template: template,
+      asset: asset,
+      dataSources: dataSources ?? [],
+      redirectTo: redirectTo,
+    );
+    routes.add(route);
+    return route;
+  }
+
+  RouteBuilder addRedirect(String path, String redirectTo) {
+    final route = RouteBuilder.redirect(path, redirectTo);
+    routes.add(route);
+    return route;
+  }
+
+  AssetBuilder addStringAsset(
+    String name,
+    String content, {
+    String mimeType = 'text/plain',
+  }) {
+    final asset = AssetBuilder.fromString(
+      name,
+      content,
+      mimeType: mimeType,
+    );
+    assets.add(asset);
+    return asset;
+  }
+}
 
 sealed class _Core {
   late int id;
@@ -228,140 +363,5 @@ class RouteBuilder extends _Core {
       );
     }
     return id;
-  }
-}
-
-class UIBuilder {
-  final UIDatabase db;
-
-  UIBuilder(this.db);
-
-  List<AssetBuilder> assets = [];
-  List<TemplateBuilder> templates = [];
-  List<RouteBuilder> routes = [];
-  List<DataSourceBuilder> dataSources = [];
-
-  Future<void> build() async {
-    for (final asset in assets) {
-      await asset.create(db);
-    }
-    for (final template in templates) {
-      await template.create(db);
-    }
-    for (final dataSource in dataSources) {
-      await dataSource.create(db);
-    }
-    for (final route in routes) {
-      await route.create(db);
-    }
-  }
-
-  AssetBuilder addAsset(
-    String name,
-    String mimeType,
-    Uint8List content,
-  ) {
-    final asset = AssetBuilder(
-      name: name,
-      mimeType: mimeType,
-      content: content,
-    );
-    assets.add(asset);
-    return asset;
-  }
-
-  TemplateBuilder addTemplate(
-    String name,
-    AssetBuilder asset,
-  ) {
-    final template = TemplateBuilder(
-      name: name,
-      asset: asset,
-    );
-    templates.add(template);
-    return template;
-  }
-
-  TemplateBuilder addStringTemplate(
-    String name,
-    String content,
-  ) {
-    final template = TemplateBuilder.fromString(name, content);
-    templates.add(template);
-    return template;
-  }
-
-  DataSourceBuilder addJsonDataSource(
-    String name,
-    Map<String, dynamic> json,
-  ) {
-    final dataSource = DataSourceBuilder.json(name, json);
-    dataSources.add(dataSource);
-    return dataSource;
-  }
-
-  DataSourceBuilder addSqlDataSource(
-    String name,
-    String sqlTemplate,
-  ) {
-    final dataSource = DataSourceBuilder.sql(name, sqlTemplate);
-    dataSources.add(dataSource);
-    return dataSource;
-  }
-
-  DataSourceBuilder addHttpDataSource(
-    String name,
-    String urlTemplate, {
-    String method = 'GET',
-    String? headersTemplate,
-    String? bodyTemplate,
-  }) {
-    final dataSource = DataSourceBuilder.http(
-      name,
-      urlTemplate,
-      method: method,
-      headersTemplate: headersTemplate,
-      bodyTemplate: bodyTemplate,
-    );
-    dataSources.add(dataSource);
-    return dataSource;
-  }
-
-  RouteBuilder addRoute(
-    String path, {
-    TemplateBuilder? template,
-    AssetBuilder? asset,
-    List<DataSourceBuilder>? dataSources,
-    String? redirectTo, // New
-  }) {
-    final route = RouteBuilder(
-      path: path,
-      template: template,
-      asset: asset,
-      dataSources: dataSources ?? [],
-      redirectTo: redirectTo,
-    );
-    routes.add(route);
-    return route;
-  }
-
-  RouteBuilder addRedirect(String path, String redirectTo) {
-    final route = RouteBuilder.redirect(path, redirectTo);
-    routes.add(route);
-    return route;
-  }
-
-  AssetBuilder addStringAsset(
-    String name,
-    String content, {
-    String mimeType = 'text/plain',
-  }) {
-    final asset = AssetBuilder.fromString(
-      name,
-      content,
-      mimeType: mimeType,
-    );
-    assets.add(asset);
-    return asset;
   }
 }
